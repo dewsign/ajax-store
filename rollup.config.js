@@ -4,7 +4,7 @@ export default {
     input: 'src/index.js',
     output: {
         file: 'dist/index.js',
-        format: 'es',
+        format: 'cjs',
     },
     external: [
         'vue',
