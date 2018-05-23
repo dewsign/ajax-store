@@ -1,6 +1,6 @@
 {
     "name": "ajax-store",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "Vuex/Axios/Pusher store to enable SPAs to work with remote data without needing to interact with Ajax",
     "main": "dist/index.js",
     "files": [
