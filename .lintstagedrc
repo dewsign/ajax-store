@@ -10,5 +10,8 @@
     ],
     ".*rc": [
         "jsonlint"
+    ],
+    "*.php": [
+        "./vendor/bin/phpcs"
     ]
 }
