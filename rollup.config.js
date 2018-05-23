@@ -11,6 +11,7 @@ export default {
         'axios',
         'lodash',
         'laravel-echo',
+        'pusher-js',
     ],
     plugins: [
         RollupPluginBabel(),

@@ -1,9 +1,12 @@
 import Echo from 'laravel-echo'
+import PusherJs from 'pusher-js'
 
 export default {
 
     plugin: {
         install(Vue, { key, cluster = 'eu', encrypted = true }) {
+            window.Pusher = PusherJs
+
             Object.defineProperty(Vue.prototype, '$echo', {
                 value: new Echo({
                     broadcaster: 'pusher',
