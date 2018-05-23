@@ -7,6 +7,10 @@
         "dist/index.js",
         "README.md"
     ],
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/dewsign/ajax-store.git"
+    },
     "scripts": {
         "build": "rollup -c",
         "watch": "rollup -mwc",
