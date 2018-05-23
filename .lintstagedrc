@@ -1,0 +1,14 @@
+{
+    "*.js": [
+        "eslint"
+    ],
+    "*.md": [
+        "markdownlint"
+    ],
+    "*.json": [
+        "jsonlint"
+    ],
+    ".*rc": [
+        "jsonlint"
+    ]
+}
