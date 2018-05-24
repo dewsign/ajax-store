@@ -28,8 +28,6 @@ export default {
          * Here we loop over every loaded Vuex module and listen to broadcasts within a private
          * channel of the same name. That allows our AjaxStore to action all changes made to the
          * database backend to all current CMS users.
-         *
-         * TODO: Move into AjaxStore package
          */
         mounted() {
             /* eslint-disable no-underscore-dangle */

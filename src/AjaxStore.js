@@ -4,9 +4,6 @@ import axios from 'axios'
 import { set } from 'vue'
 import { find, findIndex } from 'lodash'
 
-/**
- * TODO: Move into AjaxStore package
-*/
 class AjaxStore {
     constructor(options = {}) {
         this.action = options.action || ''
