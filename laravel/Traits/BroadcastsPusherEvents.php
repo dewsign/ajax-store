@@ -27,6 +27,14 @@ trait BroadcastsPusherEvents
             Event::fire(new ModelUpdate($model, 'Updated', App::getLocale()));
         });
 
+        /**
+         * NOTICE: For some reason this doesn't get fired but we keep it here incase that unexpected
+         * behaviour changes and the event actually gets dispatched. Won't hurt.
+         */
+        static::updated(function ($model) {
+            Event::fire(new ModelUpdate($model, 'Updated', App::getLocale()));
+        });
+
         static::deleting(function ($model) {
             Event::fire(new ModelUpdate($model, 'Deleted', App::getLocale()));
         });
