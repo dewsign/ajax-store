@@ -1,6 +1,6 @@
 import { mapGetters, mapActions } from 'vuex'
 
-export default store => ({
+export default (store, relationships = []) => ({
 
     computed: {
 
@@ -37,11 +37,19 @@ export default store => ({
             this.selectItem({ id: parseInt(this.$route.params.id) })
         },
 
+        /**
+         * Load relationships model data
+         */
+        loadRequiredRelationships() {
+            relationships.map(related => this.$store.dispatch(`${related}/fillItems`))
+        },
+
     },
 
     mounted() {
         this.setSelectedItemFromRoute()
         this.fillItems()
+        this.loadRequiredRelationships()
     },
 
 })
