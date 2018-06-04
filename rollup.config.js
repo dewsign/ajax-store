@@ -8,6 +8,7 @@ export default {
     },
     external: [
         'vue',
+        'vuex',
         'axios',
         'lodash',
         'laravel-echo',
