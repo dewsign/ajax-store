@@ -8,10 +8,12 @@ export default (store, relationships = []) => ({
             'items',
             'selected',
             'hasItems',
+            'translations',
         ]),
 
         ...mapGetters([
             'locale',
+            'languages',
             'loading',
         ]),
 
@@ -44,6 +46,14 @@ export default (store, relationships = []) => ({
             relationships.map(related => this.$store.dispatch(`${related}/fillItems`))
         },
 
+    },
+
+    watch: {
+        translations: {
+            handler(availableTranslations) {
+                this.$store.dispatch('setTranslations', availableTranslations)
+            },
+        },
     },
 
     mounted() {

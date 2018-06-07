@@ -46,7 +46,7 @@ class AjaxStore {
                 },
                 /**
                  * Map the local locale getter to the root locale getter for easier usability
-                 * within this modeule.
+                 * within this module.
                  */
                 locale: (state, getters, rootState, { locale }) => locale,
                 selected: ({ selected }, { items }) => find(items, selected) || {},
@@ -56,6 +56,9 @@ class AjaxStore {
 
                     return items.length !== 0
                 },
+                translations: ({ items, selected }, getters, rootState, { languages }) =>
+                    languages.filter(language =>
+                        find(items[language], selected) instanceof Object),
             },
 
             mutations: {
@@ -64,8 +67,8 @@ class AjaxStore {
                     set(state, 'selected', selection)
                 },
 
-                createItem: ({ items }, { locale, data }) => {
-                    items[locale].push(data)
+                createItem: ({ items }, { locale, item }) => {
+                    items[locale].push(item)
                 },
 
                 updateItem: ({ items }, { index, item, locale }) => {
@@ -103,17 +106,17 @@ class AjaxStore {
                     })
                 },
 
-                updateItems: ({ dispatch, commit, getters }) => {
+                updateItems: ({ dispatch, commit, getters }, forceLocale = null) => {
                     dispatch('setLoading', true, { root: true })
 
                     axios({
                         method: this.method,
-                        url: this.getActionUrlForLocale(getters.locale),
+                        url: this.getActionUrlForLocale(forceLocale || getters.locale),
                     })
                         .then(({ data }) => {
                             dispatch('setLoading', false, { root: true })
                             commit('updateItems', {
-                                locale: getters.locale,
+                                locale: forceLocale || getters.locale,
                                 data,
                             })
                         })
@@ -125,16 +128,22 @@ class AjaxStore {
 
                 itemUpdated: ({ commit, state }, { locale, data }) => {
                     const { id } = data
+                    const index = findIndex(state.items[locale], { id })
 
-                    commit('updateItem', {
+                    const itemMethod = index > -1 ? 'updateItem' : 'createItem'
+
+                    commit(itemMethod, {
                         item: data,
-                        index: findIndex(state.items[locale], { id }),
+                        index,
                         locale,
                     })
                 },
 
                 itemCreated: ({ commit }, { locale, data }) => {
-                    commit('createItem', { locale, data })
+                    commit('createItem', {
+                        locale,
+                        item: data,
+                    })
                 },
 
                 itemDeleted: ({ commit }, { locale, data }) => {
