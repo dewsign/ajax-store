@@ -11,16 +11,16 @@ trait BroadcastsPusherEvents
 {
     static public function bootBroadcastsPusherEvents()
     {
-        static::created(function ($model) {
-            Event::fire(new ModelUpdate($model, 'Created', App::getLocale()));
-        });
-
         /**
-         * For some reason the updated event wasn't triggering to we are hooking into the saving
-         * model even but only actioning it if the item wasn't recently created.
+         * For some reason the updated event wasn't triggering so we are hooking into the saving model event
+         * This is triggered on create and save and we fire the appropriate event based on wasRecentlyCreated
          */
         static::saved(function ($model) {
             if ($model->wasRecentlyCreated) {
+                Event::fire(new ModelUpdate($model, 'Created', App::getLocale()));
+
+                $model->wasRecentlyCreated = false;
+
                 return;
             }
 
