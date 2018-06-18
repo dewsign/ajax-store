@@ -154,10 +154,10 @@ class AjaxStore {
                  * Try to populate the items if there aren't any already. Works like updateItems but
                  * doesn't force a local update. Typically used when switching locale.
                  */
-                fillItems: ({ getters, dispatch }) => {
+                fillItems: ({ getters, dispatch }, forceLocale = null) => {
                     if (getters.hasItems) return
 
-                    dispatch('updateItems')
+                    dispatch('updateItems', forceLocale)
                 },
 
             },
