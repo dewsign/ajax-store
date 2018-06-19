@@ -54,6 +54,5 @@ trait BroadcastsPusherEvents
         $this->save();
 
         Event::fire(new ModelUpdate($model, 'Deleted', $locale));
-
     }
 }
