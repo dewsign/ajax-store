@@ -28,34 +28,61 @@ class AjaxStore {
 
             getters: {
                 errors: state => state.errors,
+
                 /**
                  * Return the items within this store module for the current language
                  */
-                items: (state, getters) => {
+                items: (state, { locale }) => {
                     /**
                      * We need to check if the language objects already exists in the array and
                      * create a new Object if it doesn't to maintain Vue reactivity.
                      */
-                    if (!state.items[getters.locale]) {
-                        const newLanguage = { [getters.locale]: [] }
+                    if (!state.items[locale]) {
+                        const newLanguage = { [locale]: [] }
 
                         set(state, 'items', Object.assign(newLanguage, state.items))
                     }
 
-                    return state.items[getters.locale]
+                    return state.items[locale]
                 },
+
                 /**
                  * Map the local locale getter to the root locale getter for easier usability
                  * within this module.
                  */
                 locale: (state, getters, rootState, { locale }) => locale,
-                selected: ({ selected }, { items }) => find(items, selected) || {},
+
+                /**
+                 * Return the currently selected item in the active locale or the default
+                 * locale if one doesn't exist.
+                 */
+                selected: ({ selected }, { items, selectedDefault }) =>
+                    find(items, selected) || selectedDefault || {},
+
+                /**
+                 * Return the selected item in the default locale
+                 * to use when creating new translations.
+                 */
+                selectedDefault: ({ selected, items }) => find(items.en, selected) || {},
+
+                /**
+                 * Get the index of the selected item in the active locale.
+                 */
                 selectedIndex: ({ selected }, { items }) => findIndex(items, selected),
+
+                /**
+                 * Determine if the current locale has any items so that we can load them if not.
+                 */
                 hasItems: (state, { items }) => {
                     if (!items) return false
 
                     return items.length !== 0
                 },
+
+                /**
+                 * Returns an array of locale identifiers in which the currently selected item
+                 * exists in order to determine what translations are available.
+                 */
                 translations: ({ items, selected }, getters, rootState, { languages }) =>
                     languages.filter(language =>
                         find(items[language], selected) instanceof Object),
