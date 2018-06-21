@@ -30,6 +30,7 @@ export default (store, relationships = []) => ({
             'setLocale',
             'updateItems',
             'updateSelected',
+            'deleteSelected',
         ]),
 
         /**
