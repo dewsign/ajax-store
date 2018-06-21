@@ -126,10 +126,17 @@ class AjaxStore {
                     commit('selectItem', selection)
                 },
 
-                updateSelected: ({ commit, getters }, value) => {
-                    commit('updateSelected', {
-                        item: value,
-                        index: getters.selectedIndex,
+                updateSelected: ({ dispatch, getters: { locale } }, value) => {
+                    dispatch('itemUpdated', {
+                        data: value,
+                        locale,
+                    })
+                },
+
+                deleteSelected: ({ dispatch, getters: { locale } }, value) => {
+                    dispatch('itemDeleted', {
+                        data: value,
+                        locale,
                     })
                 },
 
