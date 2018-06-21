@@ -106,10 +106,6 @@ class AjaxStore {
                     set(items, locale, items[locale].filter(({ id }) => id !== data.id))
                 },
 
-                updateSelected: ({ items, locale }, { index, item }) => {
-                    set(items[locale], index, item)
-                },
-
                 updateItems: ({ items }, { data, locale }) => {
                     set(items, locale, data)
                 },
@@ -122,10 +118,18 @@ class AjaxStore {
 
             actions: {
 
+                /**
+                 * Set the selected item in this store. The selection should be a nested object
+                 * identifier. E.g. { id: 4 }.
+                 */
                 selectItem: ({ commit }, selection = null) => {
                     commit('selectItem', selection)
                 },
 
+                /**
+                 * Helper method to update the current item. NOTE: It actually matches the item from
+                 * the value and doesn't use the selected getter.
+                 */
                 updateSelected: ({ dispatch, getters: { locale } }, value) => {
                     dispatch('itemUpdated', {
                         data: value,
@@ -133,6 +137,10 @@ class AjaxStore {
                     })
                 },
 
+                /**
+                 * Helper method to delete the current item. NOTE: It actually matches the item from
+                 * the value and doesn't use the selected getter.
+                 */
                 deleteSelected: ({ dispatch, getters: { locale } }, value) => {
                     dispatch('itemDeleted', {
                         data: value,
@@ -140,6 +148,10 @@ class AjaxStore {
                     })
                 },
 
+                /**
+                 * Re-populate the items for a locale from an API Endpoint.
+                 * Replaces the current list of items.
+                 */
                 updateItems: ({ dispatch, commit, getters }, forceLocale = null) => {
                     dispatch('setLoading', true, { root: true })
 
@@ -160,6 +172,10 @@ class AjaxStore {
                         })
                 },
 
+                /**
+                 * Event listener action called by pusher.
+                 * Updates an item or creates it if it doesn't already exist.
+                 */
                 itemUpdated: ({ commit, state }, { locale, data }) => {
                     const { id } = data
                     const index = findIndex(state.items[locale], { id })
@@ -173,6 +189,10 @@ class AjaxStore {
                     })
                 },
 
+                /**
+                 * Event listener action called by pusher.
+                 * Creates a new item.
+                 */
                 itemCreated: ({ commit }, { locale, data }) => {
                     commit('createItem', {
                         locale,
@@ -180,6 +200,10 @@ class AjaxStore {
                     })
                 },
 
+                /**
+                 * Event listener action called by pusher.
+                 * Deleted an item.
+                 */
                 itemDeleted: ({ commit }, { locale, data }) => {
                     commit('deleteItem', { locale, data })
                 },
