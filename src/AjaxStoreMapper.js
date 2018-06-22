@@ -84,6 +84,7 @@ export default (store, relationships = []) => ({
     mounted() {
         this.setSelectedItemFromRoute()
         this.populateAllDatasets()
+        this.$store.dispatch('setTranslations', this.translations)
     },
 
 })

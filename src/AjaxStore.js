@@ -8,6 +8,7 @@ class AjaxStore {
     constructor(options = {}) {
         this.action = options.action || ''
         this.method = options.method || 'GET'
+        this.translatable = options.translatable || false
 
         return this.getStore()
     }
@@ -50,7 +51,11 @@ class AjaxStore {
                  * Map the local locale getter to the root locale getter for easier usability
                  * within this module.
                  */
-                locale: (state, getters, rootState, { locale }) => locale,
+                locale: (state, getters, rootState, { locale }) => {
+                    const isTranslatable = this.translatable
+
+                    return isTranslatable ? locale : 'en'
+                },
 
                 /**
                  * Return the currently selected item in the active locale or the default
