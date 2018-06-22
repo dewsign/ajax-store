@@ -2,7 +2,7 @@
 
 import axios from 'axios'
 import { set } from 'vue'
-import { find, findIndex } from 'lodash'
+import { find, findIndex, uniq } from 'lodash'
 
 class AjaxStore {
     constructor(options = {}) {
@@ -83,9 +83,14 @@ class AjaxStore {
                  * Returns an array of locale identifiers in which the currently selected item
                  * exists in order to determine what translations are available.
                  */
-                translations: ({ items, selected }, getters, rootState, { languages }) =>
-                    languages.filter(language =>
-                        find(items[language], selected) instanceof Object),
+                translations: ({ items, selected }, { locale }, rootState, { languages }) => {
+                    const availableTranslations = languages.filter(language =>
+                        find(items[language], selected) instanceof Object)
+
+                    if (locale) availableTranslations.push(locale)
+
+                    return uniq(availableTranslations)
+                },
             },
 
             mutations: {
