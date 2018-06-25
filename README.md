@@ -103,3 +103,7 @@ new Vue({
     ]
 })
 ```
+
+## Gotchas
+
+The `BroadcastsPusherEvents` trait will set the `wasRecentlyCreated` property of a model to false after the first `saved` event hook.  This means that a new model can be instanciated with `create()` which fires a `save` event and any further saves on the model will be treated as an update.  This is useful when associating many-to-many relations with the model which require the model to be present in the database.
