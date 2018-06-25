@@ -30,6 +30,7 @@ export default (store, relationships = []) => ({
             'setLocale',
             'updateItems',
             'updateSelected',
+            'deleteSelected',
         ]),
 
         /**
@@ -42,13 +43,37 @@ export default (store, relationships = []) => ({
         /**
          * Load relationships model data
          */
-        loadRequiredRelationships() {
-            relationships.map(related => this.$store.dispatch(`${related}/fillItems`))
+        loadRequiredRelationships(locale = null) {
+            relationships.map(related => this.$store.dispatch(`${related}/fillItems`, locale))
+        },
+
+        /**
+         * Load all data for the current module and any relationships for all required languages.
+         * Typically this method should be used for initial population of data as it will only
+         * request data if it doesn't already exist client site (hasn't been loaded yet)
+         */
+        populateAllDatasets() {
+            const languages = this.languages.length ? this.languages : ['en']
+
+            languages.map((language) => {
+                this.fillItems(language)
+                this.loadRequiredRelationships(language)
+                return true
+            })
         },
 
     },
 
     watch: {
+        languages: {
+            handler() {
+                /**
+                 * Ensure we have all required content for all languages when the languages change
+                 */
+                this.populateAllDatasets()
+            },
+        },
+
         translations: {
             handler(availableTranslations) {
                 this.$store.dispatch('setTranslations', availableTranslations)
@@ -58,8 +83,8 @@ export default (store, relationships = []) => ({
 
     mounted() {
         this.setSelectedItemFromRoute()
-        this.fillItems()
-        this.loadRequiredRelationships()
+        this.populateAllDatasets()
+        this.$store.dispatch('setTranslations', this.translations)
     },
 
 })

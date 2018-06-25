@@ -2,12 +2,13 @@
 
 import axios from 'axios'
 import { set } from 'vue'
-import { find, findIndex } from 'lodash'
+import { find, findIndex, uniq } from 'lodash'
 
 class AjaxStore {
     constructor(options = {}) {
         this.action = options.action || ''
         this.method = options.method || 'GET'
+        this.translatable = options.translatable || false
 
         return this.getStore()
     }
@@ -28,37 +29,73 @@ class AjaxStore {
 
             getters: {
                 errors: state => state.errors,
+
                 /**
                  * Return the items within this store module for the current language
                  */
-                items: (state, getters) => {
+                items: (state, { locale }) => {
                     /**
                      * We need to check if the language objects already exists in the array and
                      * create a new Object if it doesn't to maintain Vue reactivity.
                      */
-                    if (!state.items[getters.locale]) {
-                        const newLanguage = { [getters.locale]: [] }
+                    if (!state.items[locale]) {
+                        const newLanguage = { [locale]: [] }
 
                         set(state, 'items', Object.assign(newLanguage, state.items))
                     }
 
-                    return state.items[getters.locale]
+                    return state.items[locale]
                 },
+
                 /**
                  * Map the local locale getter to the root locale getter for easier usability
                  * within this module.
                  */
-                locale: (state, getters, rootState, { locale }) => locale,
-                selected: ({ selected }, { items }) => find(items, selected) || {},
+                locale: (state, getters, rootState, { locale }) => {
+                    const isTranslatable = this.translatable
+
+                    return isTranslatable ? locale : 'en'
+                },
+
+                /**
+                 * Return the currently selected item in the active locale or the default
+                 * locale if one doesn't exist.
+                 */
+                selected: ({ selected }, { items, selectedDefault }) =>
+                    find(items, selected) || selectedDefault || {},
+
+                /**
+                 * Return the selected item in the default locale
+                 * to use when creating new translations.
+                 */
+                selectedDefault: ({ selected, items }) => find(items.en, selected) || {},
+
+                /**
+                 * Get the index of the selected item in the active locale.
+                 */
                 selectedIndex: ({ selected }, { items }) => findIndex(items, selected),
+
+                /**
+                 * Determine if the current locale has any items so that we can load them if not.
+                 */
                 hasItems: (state, { items }) => {
                     if (!items) return false
 
                     return items.length !== 0
                 },
-                translations: ({ items, selected }, getters, rootState, { languages }) =>
-                    languages.filter(language =>
-                        find(items[language], selected) instanceof Object),
+
+                /**
+                 * Returns an array of locale identifiers in which the currently selected item
+                 * exists in order to determine what translations are available.
+                 */
+                translations: ({ items, selected }, { locale }, rootState, { languages }) => {
+                    const availableTranslations = languages.filter(language =>
+                        find(items[language], selected) instanceof Object)
+
+                    if (locale) availableTranslations.push(locale)
+
+                    return uniq(availableTranslations)
+                },
             },
 
             mutations: {
@@ -79,10 +116,6 @@ class AjaxStore {
                     set(items, locale, items[locale].filter(({ id }) => id !== data.id))
                 },
 
-                updateSelected: ({ items, locale }, { index, item }) => {
-                    set(items[locale], index, item)
-                },
-
                 updateItems: ({ items }, { data, locale }) => {
                     set(items, locale, data)
                 },
@@ -95,17 +128,40 @@ class AjaxStore {
 
             actions: {
 
+                /**
+                 * Set the selected item in this store. The selection should be a nested object
+                 * identifier. E.g. { id: 4 }.
+                 */
                 selectItem: ({ commit }, selection = null) => {
                     commit('selectItem', selection)
                 },
 
-                updateSelected: ({ commit, getters }, value) => {
-                    commit('updateSelected', {
-                        item: value,
-                        index: getters.selectedIndex,
+                /**
+                 * Helper method to update the current item. NOTE: It actually matches the item from
+                 * the value and doesn't use the selected getter.
+                 */
+                updateSelected: ({ dispatch, getters: { locale } }, value) => {
+                    dispatch('itemUpdated', {
+                        data: value,
+                        locale,
                     })
                 },
 
+                /**
+                 * Helper method to delete the current item. NOTE: It actually matches the item from
+                 * the value and doesn't use the selected getter.
+                 */
+                deleteSelected: ({ dispatch, getters: { locale } }, value) => {
+                    dispatch('itemDeleted', {
+                        data: value,
+                        locale,
+                    })
+                },
+
+                /**
+                 * Re-populate the items for a locale from an API Endpoint.
+                 * Replaces the current list of items.
+                 */
                 updateItems: ({ dispatch, commit, getters }, forceLocale = null) => {
                     dispatch('setLoading', true, { root: true })
 
@@ -126,6 +182,10 @@ class AjaxStore {
                         })
                 },
 
+                /**
+                 * Event listener action called by pusher.
+                 * Updates an item or creates it if it doesn't already exist.
+                 */
                 itemUpdated: ({ commit, state }, { locale, data }) => {
                     const { id } = data
                     const index = findIndex(state.items[locale], { id })
@@ -139,6 +199,10 @@ class AjaxStore {
                     })
                 },
 
+                /**
+                 * Event listener action called by pusher.
+                 * Creates a new item.
+                 */
                 itemCreated: ({ commit }, { locale, data }) => {
                     commit('createItem', {
                         locale,
@@ -146,6 +210,10 @@ class AjaxStore {
                     })
                 },
 
+                /**
+                 * Event listener action called by pusher.
+                 * Deleted an item.
+                 */
                 itemDeleted: ({ commit }, { locale, data }) => {
                     commit('deleteItem', { locale, data })
                 },
@@ -154,10 +222,10 @@ class AjaxStore {
                  * Try to populate the items if there aren't any already. Works like updateItems but
                  * doesn't force a local update. Typically used when switching locale.
                  */
-                fillItems: ({ getters, dispatch }) => {
+                fillItems: ({ getters, dispatch }, forceLocale = null) => {
                     if (getters.hasItems) return
 
-                    dispatch('updateItems')
+                    dispatch('updateItems', forceLocale)
                 },
 
             },

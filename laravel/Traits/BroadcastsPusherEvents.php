@@ -39,4 +39,20 @@ trait BroadcastsPusherEvents
             Event::fire(new ModelUpdate($model, 'Deleted', App::getLocale()));
         });
     }
+
+    /**
+     * Removes a translations and fires the model delted event for pusher.
+     *
+     * @param string $locale
+     * @return void
+     */
+    public function deleteTranslation(string $locale)
+    {
+        $model = $this;
+
+        $this->forgetAllTranslations($locale);
+        $this->save();
+
+        Event::fire(new ModelUpdate($model, 'Deleted', $locale));
+    }
 }
